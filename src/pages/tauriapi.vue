@@ -1,5 +1,5 @@
 <template>
-    <el-container class="layoutBox">
+    <el-container class="layoutBox" :class="{ isWeb: !isTauri() }">
         <!-- 侧边栏 -->
         <el-aside width="170px">
             <el-scrollbar>
@@ -25,7 +25,7 @@
                             </el-icon>
                             <span>Tauri2Api</span>
                         </template>
-                        <el-menu-item index="1-1">apps</el-menu-item>
+                        <el-menu-item index="1-1"> apps </el-menu-item>
                         <el-menu-item index="1-2">core</el-menu-item>
                         <el-menu-item index="1-3">dpi</el-menu-item>
                         <el-menu-item index="1-4">event</el-menu-item>
@@ -79,38 +79,24 @@
                         <el-menu-item index="3-1">{{
                             t('linkTo')
                         }}</el-menu-item>
-                        <el-menu-item index="3-2">{{
+                        <!-- <el-menu-item index="3-2">{{
                             t('filterAd')
-                        }}</el-menu-item>
+                        }}</el-menu-item> -->
+                        <el-menu-item index="3-2">网站调整</el-menu-item>
                         <el-menu-item index="3-3">{{
-                            t('removeElement')
-                        }}</el-menu-item>
-                        <el-menu-item index="3-4">{{
-                            t('addElement')
-                        }}</el-menu-item>
-                        <el-menu-item index="3-5">{{
                             t('listenData')
                         }}</el-menu-item>
-                        <el-menu-item index="3-6">{{
+                        <el-menu-item index="3-4">{{
                             t('dataStatistics')
                         }}</el-menu-item>
                         <el-menu-item index="3-7">{{
                             t('generateIcon')
-                        }}</el-menu-item>
-                        <el-menu-item index="3-8">{{
-                            t('websiteStyle')
                         }}</el-menu-item>
                         <el-menu-item index="3-9">{{
                             t('addFlag')
                         }}</el-menu-item>
                         <el-menu-item index="3-10">{{
                             t('startParams')
-                        }}</el-menu-item>
-                        <el-menu-item index="3-11">{{
-                            t('debugMode')
-                        }}</el-menu-item>
-                        <el-menu-item index="3-12">{{
-                            t('injectJq')
                         }}</el-menu-item>
                         <el-menu-item index="3-13">
                             {{ t('disableCors') }}
@@ -119,7 +105,7 @@
                         <el-menu-item index="3-15">文件压缩</el-menu-item>
                         <el-menu-item index="3-16">下载资源</el-menu-item>
                     </el-sub-menu>
-                    <el-menu-item index="4">
+                    <el-menu-item v-if="isTauri()" index="4">
                         <el-icon>
                             <span class="iconfont tauriIcon">&#xe655;</span>
                         </el-icon>
@@ -154,6 +140,7 @@
                     :src="image || ppIcon"
                     alt="image"
                     class="image"
+                    @click="openUrl(urlMap.ppofficial)"
                 />
                 <!-- <div v-else>
                     <el-button>留言</el-button>
@@ -176,8 +163,35 @@
             </el-header>
             <!-- 主内容 -->
             <el-main>
+                <!-- my info -->
+                <!-- api/template -->
+                <div v-if="menuIndex === '0-1'" class="cardContent">
+                    <h1 class="cardTitle">my info</h1>
+                    <p>Get Github information.</p>
+                    <div class="cardBox">
+                        <el-tooltip
+                            content="Github discount amount"
+                            placement="bottom"
+                        >
+                            <el-button>
+                                {{ discountAmount.toFixed(2) }}/16 $
+                            </el-button>
+                        </el-tooltip>
+                        <el-tooltip
+                            content="Github Api Limit"
+                            placement="bottom"
+                        >
+                            <el-button>
+                                {{ githubApiLimit.used }}
+                                /
+                                {{ githubApiLimit.limit }}
+                                Api
+                            </el-button>
+                        </el-tooltip>
+                    </div>
+                </div>
                 <!-- api/app -->
-                <div v-if="menuIndex === '1-1'" class="cardContent">
+                <div v-else-if="menuIndex === '1-1'" class="cardContent">
                     <h2>app</h2>
                     <p>
                         @Tauri apps/app is provided by Tauri
@@ -248,111 +262,81 @@
                         app.withGlobalTauri in tauri.conf.json is set to true.
                     </p>
                     <div class="cardBox">
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
-                            <el-button @click="defaultWindowIconApi">
-                                addPluginListener
-                            </el-button>
+                        <el-tooltip content="convertFileSrc" placement="bottom">
+                            <el-button>{{ t('convertFileSrc') }}</el-button>
+                        </el-tooltip>
+                        <el-tooltip content="invoke" placement="bottom">
+                            <el-button>{{ t('invoke') }}</el-button>
+                        </el-tooltip>
+                        <el-tooltip content="isTauri" placement="bottom">
+                            <el-button>{{ t('isTauri') }}</el-button>
                         </el-tooltip>
                         <el-tooltip
-                            content="Gets the application name."
+                            content="requestPermissions"
                             placement="bottom"
                         >
-                            <el-button @click="getNameApi"
-                                >checkPermissions</el-button
-                            >
+                            <el-button>{{ t('requestPermissions') }}</el-button>
                         </el-tooltip>
                         <el-tooltip
-                            content="Gets the Tauri version."
+                            content="transformCallback"
                             placement="bottom"
                         >
-                            <el-button @click="getTauriVersionApi">
-                                convertFileSrc
-                            </el-button>
+                            <el-button>{{ t('transformCallback') }}</el-button>
                         </el-tooltip>
                         <el-tooltip
-                            content="Gets the application version."
+                            content="checkPermissions"
                             placement="bottom"
                         >
-                            <el-button @click="getVersionApi">
-                                invoke
-                            </el-button>
+                            <el-button>{{ t('checkPermissions') }}</el-button>
                         </el-tooltip>
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="PermissionState"
                             placement="bottom"
                         >
-                            <el-button @click="hideApi">isTauri</el-button>
+                            <el-button>{{ t('PermissionState') }}</el-button>
                         </el-tooltip>
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="addPluginListener"
                             placement="bottom"
                         >
-                            <el-button @click="setThemeApi">
-                                requestPermissions
-                            </el-button>
+                            <el-button>{{ t('addPluginListener') }}</el-button>
                         </el-tooltip>
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
-                            <el-button @click="showApi">
-                                transformCallback
-                            </el-button>
+                        <el-tooltip content="PluginListener" placement="bottom">
+                            <el-button>{{ t('PluginListener') }}</el-button>
+                        </el-tooltip>
+                        <el-tooltip content="Channel" placement="bottom">
+                            <el-button>{{ t('Channel') }}</el-button>
                         </el-tooltip>
                     </div>
                 </div>
                 <!-- api/dpi -->
-                <!-- api/core -->
                 <div v-else-if="menuIndex === '1-3'" class="cardContent">
                     <h2>dpi</h2>
                     <p>A position represented in logical pixels.</p>
                     <div class="cardBox">
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="LogicalPosition"
                             placement="bottom"
                         >
-                            <el-button @click="defaultWindowIconApi">
-                                LogicalPosition
-                            </el-button>
+                            <el-button>{{ t('LogicalPosition') }}</el-button>
+                        </el-tooltip>
+                        <el-tooltip content="LogicalSize" placement="bottom">
+                            <el-button>{{ t('LogicalSize') }}</el-button>
+                        </el-tooltip>
+                        <el-tooltip content="Size" placement="bottom">
+                            <el-button>{{ t('Size') }}</el-button>
                         </el-tooltip>
                         <el-tooltip
-                            content="Gets the application name."
+                            content="PhysicalPosition"
                             placement="bottom"
                         >
-                            <el-button @click="getNameApi"
-                                >PhysicalPosition</el-button
-                            >
+                            <el-button>{{ t('PhysicalPosition') }}</el-button>
                         </el-tooltip>
-                        <el-tooltip
-                            content="Gets the Tauri version."
-                            placement="bottom"
-                        >
-                            <el-button @click="getTauriVersionApi">
-                                Position
-                            </el-button>
+                        <el-tooltip content="PhysicalSize" placement="bottom">
+                            <el-button>{{ t('PhysicalSize') }}</el-button>
                         </el-tooltip>
-                        <el-tooltip
-                            content="Gets the application version."
-                            placement="bottom"
-                        >
-                            <el-button @click="getVersionApi">
-                                LogicalSize
-                            </el-button>
-                        </el-tooltip>
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
-                            <el-button @click="hideApi">PhysicalSize</el-button>
-                        </el-tooltip>
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
-                            <el-button @click="setThemeApi">Size</el-button>
+                        <el-tooltip content="Position" placement="bottom">
+                            <el-button>{{ t('Position') }}</el-button>
                         </el-tooltip>
                     </div>
                 </div>
@@ -366,31 +350,19 @@
                         app.withGlobalTauri in tauri.conf.json is set to true.
                     </p>
                     <div class="cardBox">
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
+                        <el-tooltip content="listen" placement="bottom">
                             <el-button @click="listenEvent">listen</el-button>
                         </el-tooltip>
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
+                        <el-tooltip content="emit" placement="bottom">
                             <el-button @click="sendEvent">emit</el-button>
                         </el-tooltip>
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
+                        <el-tooltip content="emit to" placement="bottom">
                             <el-button @click="sendEvent">emitTo</el-button>
                         </el-tooltip>
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
-                            <el-button @click="unlistenEvent"
-                                >unlisten</el-button
-                            >
+                        <el-tooltip content="unlisten event" placement="bottom">
+                            <el-button @click="unlistenEvent">
+                                unlisten
+                            </el-button>
                         </el-tooltip>
                         <el-tooltip
                             content="Get the default window icon."
@@ -553,10 +525,7 @@
                         system tray. This package is also accessible
                     </p>
                     <div class="cardBox">
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
+                        <el-tooltip content="create tray" placement="bottom">
                             <el-button>{{ t('waitDev') }}</el-button>
                         </el-tooltip>
                     </div>
@@ -570,10 +539,16 @@
                     </p>
                     <div class="cardBox">
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="getCurrentWebview"
                             placement="bottom"
                         >
-                            <el-button>{{ t('waitDev') }}</el-button>
+                            <el-button>{{ t('getCurrentWebview') }}</el-button>
+                        </el-tooltip>
+                        <el-tooltip content="Webview" placement="bottom">
+                            <el-button>{{ t('Webview') }}</el-button>
+                        </el-tooltip>
+                        <el-tooltip content="getAllWebviews" placement="bottom">
+                            <el-button>{{ t('getAllWebviews') }}</el-button>
                         </el-tooltip>
                     </div>
                 </div>
@@ -586,10 +561,17 @@
                     </p>
                     <div class="cardBox">
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="Set the window icon."
                             placement="bottom"
                         >
-                            <el-button>{{ t('waitDev') }}</el-button>
+                            <el-button @click="setWindowIcon">
+                                setIcon
+                            </el-button>
+                        </el-tooltip>
+                        <el-tooltip content="base64 to ico" placement="bottom">
+                            <el-button @click="base64ToIco">
+                                base64ToIco
+                            </el-button>
                         </el-tooltip>
                     </div>
                 </div>
@@ -604,11 +586,24 @@
                         following special characters -, /, : and _.
                     </p>
                     <div class="cardBox">
+                        <el-tooltip content="WebviewWindow" placement="bottom">
+                            <el-button>{{ t('WebviewWindow') }}</el-button>
+                        </el-tooltip>
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="getCurrentWebviewWindow"
                             placement="bottom"
                         >
-                            <el-button>{{ t('waitDev') }}</el-button>
+                            <el-button>
+                                {{ t('getCurrentWebviewWindow') }}
+                            </el-button>
+                        </el-tooltip>
+                        <el-tooltip
+                            content="getAllWebviewWindows"
+                            placement="bottom"
+                        >
+                            <el-button>
+                                {{ t('getAllWebviewWindows') }}
+                            </el-button>
                         </el-tooltip>
                     </div>
                 </div>
@@ -621,19 +616,19 @@
                     <h1 class="cardTitle">pay method</h1>
                     <p>provide pay method</p>
                     <el-button @click="getPayJsCode('weixin')">
-                        wxpay
+                        wxpay pay1
                     </el-button>
                     <el-button @click="getPayJsCode('alipay')">
-                        alipay
+                        alipay pay1
+                    </el-button>
+                    <el-button @click="getYunPayCode('weixin')">
+                        weixin pay2
+                    </el-button>
+                    <el-button @click="getZPayCode('alipay')">
+                        alipay pay2
                     </el-button>
                     <el-button @click="getPayJsCode('alipay')">
                         paypal
-                    </el-button>
-                    <el-button @click="getYunPayCode('weixin')">
-                        yun pay weixin
-                    </el-button>
-                    <el-button @click="getYunPayCode('alipay')">
-                        yun pay alipay
                     </el-button>
                 </div>
                 <!-- plugin-os api -->
@@ -722,23 +717,20 @@
                     <p>对文件或文件夹进行压缩或者解压缩处理</p>
                     <div class="cardBox">
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="output directory"
                             placement="bottom"
                         >
                             <el-button @click="selectFolder">
                                 输出目录
                             </el-button>
                         </el-tooltip>
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
+                        <el-tooltip content="compress file" placement="bottom">
                             <el-button @click="compressFile">
                                 压缩文件
                             </el-button>
                         </el-tooltip>
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="decompress file"
                             placement="bottom"
                         >
                             <el-button @click="decompressFile">
@@ -755,30 +747,54 @@
                     </p>
                     <div class="cardBox">
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="select download folder"
                             placement="bottom"
                         >
                             <el-button @click="selectDownloadFolder">
                                 选择文件夹
                             </el-button>
                         </el-tooltip>
-                        <el-tooltip
-                            content="Get the default window icon."
-                            placement="bottom"
-                        >
+                        <el-tooltip content="下载文件" placement="bottom">
                             <el-button @click="downFile">下载文件</el-button>
                         </el-tooltip>
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="default download to Download directory"
                             placement="bottom"
                         >
                             <el-button @click="downFile(false)">
                                 默认下载到Download目录
                             </el-button>
                         </el-tooltip>
-                        <el-progress
-                            type="circle"
-                            :percentage="downloadProgress"
+                        <el-tooltip
+                            content="download progress"
+                            placement="bottom"
+                        >
+                            <div class="downProgress">
+                                <span>下载进度：</span>
+                                <el-progress :percentage="downloadProgress" />
+                            </div>
+                        </el-tooltip>
+                    </div>
+                    <div class="codeDemo">
+                        <h2>下载文件</h2>
+                        <p class="description">
+                            在脚本中添加以下代码，即可实现下载文件
+                        </p>
+                        <CodeEdit
+                            lang="javascript"
+                            :code="Codes.downloadFile"
+                            :disabled="true"
+                        />
+                    </div>
+                    <div class="codeDemo">
+                        <h2>下载进度</h2>
+                        <p class="description">
+                            在脚本中添加以下代码，即可监听下载进度回调
+                        </p>
+                        <CodeEdit
+                            lang="javascript"
+                            :code="Codes.downProgress"
+                            :disabled="true"
                         />
                     </div>
                 </div>
@@ -801,24 +817,36 @@
                     </div>
                 </div>
                 <!-- api/opener -->
-                <div v-else-if="menuIndex === '2-13'" class="cardContent">
+                <div
+                    v-else-if="menuIndex === '2-13' || menuIndex === '3-1'"
+                    class="cardContent"
+                >
                     <h1 class="cardTitle">opener</h1>
                     <p>
                         This plugin allows you to open files and URLs in a
                         specified, or the default, application. It also supports
-                        “revealing” files in the system’s file explorer.
+                        “revealing” files in the system’s file explorer. you can
+                        open any url or path
                     </p>
                     <div class="cardBox">
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="open url in current window"
                             placement="bottom"
                         >
-                            <el-button @click="openUrlWindow">
+                            <el-button @click="openUrlWindow('current')">
                                 打开URL(本窗口)
                             </el-button>
                         </el-tooltip>
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="open url in new window"
+                            placement="bottom"
+                        >
+                            <el-button @click="openUrlWindow('new')">
+                                打开URL(新窗口)
+                            </el-button>
+                        </el-tooltip>
+                        <el-tooltip
+                            content="open url in default browser"
                             placement="bottom"
                         >
                             <el-button @click="openUrl(textarea)">
@@ -826,13 +854,35 @@
                             </el-button>
                         </el-tooltip>
                         <el-tooltip
-                            content="Get the default window icon."
+                            content="open url in current folder"
                             placement="bottom"
                         >
                             <el-button @click="openUrl(textarea)">
                                 打开文件夹
                             </el-button>
                         </el-tooltip>
+                    </div>
+                    <div class="codeDemo">
+                        <h2>本窗口打开</h2>
+                        <p class="description">
+                            在脚本中添加以下代码，即可实现打开URL(本窗口)
+                        </p>
+                        <CodeEdit
+                            lang="javascript"
+                            :code="Codes.openUrlCurrent"
+                            :disabled="true"
+                        />
+                    </div>
+                    <div class="codeDemo">
+                        <h2>新窗口打开</h2>
+                        <p class="description">
+                            在脚本中添加以下代码，即可实现打开URL(新窗口)
+                        </p>
+                        <CodeEdit
+                            lang="javascript"
+                            :code="Codes.openUrlNew"
+                            :disabled="true"
+                        />
                     </div>
                     <div class="codeDemo">
                         <h2>默认浏览器</h2>
@@ -845,16 +895,124 @@
                             :disabled="true"
                         />
                     </div>
+                </div>
+                <!-- shell -->
+                <div v-else-if="menuIndex === '2-17'" class="cardContent">
+                    <h1 class="cardTitle">PakePlus shell</h1>
+                    <p>
+                        Access the system shell. Allows you to spawn child
+                        processes.
+                    </p>
+                    <div class="cardBox">
+                        <el-tooltip
+                            content="run any command"
+                            placement="bottom"
+                        >
+                            <el-button @click="runShell">
+                                运行任意命令
+                            </el-button>
+                        </el-tooltip>
+                    </div>
                     <div class="codeDemo">
-                        <h2>本窗口打开</h2>
+                        <h2>运行</h2>
                         <p class="description">
-                            在脚本中添加以下代码，即可实现打开URL(本窗口)
+                            在脚本中添加以下代码，即可实现运行命令
                         </p>
                         <CodeEdit
                             lang="javascript"
-                            :code="Codes.openUrlCurrent"
+                            :code="Codes.runShell"
                             :disabled="true"
                         />
+                    </div>
+                </div>
+                <!-- api/template -->
+                <div v-else-if="menuIndex === '3-2'" class="cardContent">
+                    <h1 class="cardTitle">网站调整</h1>
+                    <p>
+                        可以移除网页上不想要的元素或者广告等内容，也可以添加想要的内容，又或者是修改某些页面内容或样式，完全自定义实现
+                    </p>
+                    <div class="cardBox">
+                        <el-tooltip
+                            content="remove web element"
+                            placement="bottom"
+                        >
+                            <el-button>移除元素</el-button>
+                        </el-tooltip>
+                        <el-tooltip
+                            content="add web element"
+                            placement="bottom"
+                        >
+                            <el-button>添加元素</el-button>
+                        </el-tooltip>
+                        <el-tooltip
+                            content="modify web element"
+                            placement="bottom"
+                        >
+                            <el-button>修改元素</el-button>
+                        </el-tooltip>
+                        <el-tooltip
+                            content="change web skin"
+                            placement="bottom"
+                        >
+                            <el-button>网站换肤</el-button>
+                        </el-tooltip>
+                        <el-tooltip content="remove web ad" placement="bottom">
+                            <el-button>移除广告</el-button>
+                        </el-tooltip>
+                        <el-tooltip content="auto operation" placement="bottom">
+                            <el-button>自动化操作</el-button>
+                        </el-tooltip>
+                    </div>
+                    <div class="codeDemo">
+                        <h2>移除元素</h2>
+                        <p class="description">
+                            在脚本中添加以下代码，即可移除元素
+                        </p>
+                        <CodeEdit
+                            lang="javascript"
+                            :code="Codes.removeEle"
+                            :disabled="true"
+                        />
+                    </div>
+                    <div class="codeDemo">
+                        <h2>添加元素</h2>
+                        <p class="description">
+                            在脚本中添加以下代码，即可添加元素
+                        </p>
+                        <CodeEdit
+                            lang="javascript"
+                            :code="Codes.addEle"
+                            :disabled="true"
+                        />
+                    </div>
+                    <div class="codeDemo">
+                        <h2>修改元素</h2>
+                        <p class="description">
+                            在脚本中添加以下代码，即可修改元素
+                        </p>
+                        <CodeEdit
+                            lang="javascript"
+                            :code="Codes.modifyEle"
+                            :disabled="true"
+                        />
+                    </div>
+                    <div class="codeDemo">
+                        <h2>网站换肤</h2>
+                        <p class="description">
+                            本质还是修改网站元素，通过给网站某些元素调整颜色等属性，实现换肤
+                        </p>
+                    </div>
+                    <div class="codeDemo">
+                        <h2>移除广告</h2>
+                        <p class="description">
+                            还是通过移除元素实现，先找到广告元素的特征，然后移除
+                        </p>
+                    </div>
+                    <div class="codeDemo">
+                        <h2>自动化操作</h2>
+                        <p class="description">
+                            通过自定义js脚本逻辑，实现网站自动化操作，例如自动翻页，自动刷视频，自动回复等
+                        </p>
                     </div>
                 </div>
                 <!-- api/template -->
@@ -890,7 +1048,7 @@
             :close-on-click-modal="false"
             :close-on-press-escape="false"
             :show-close="false"
-            @close="checkYunPayStatus"
+            @close="checkPayStatus"
         >
             <div class="dialogContent">
                 <div v-if="qrCodeData" class="qrCodeBox">
@@ -944,6 +1102,8 @@ import ppIcon from '@/assets/images/pakeplus.png'
 import { useRoute, useRouter } from 'vue-router'
 import Codes from '@/utils/codes'
 import {
+    arrayBufferToBase64,
+    base64PngToIco,
     basePAYJSURL,
     baseYUNPAYURL,
     getPaySign,
@@ -952,8 +1112,11 @@ import {
     openUrl,
     payJsMchid,
     payJsSignKey,
+    urlMap,
     yunPayMchid,
     yunPaySignKey,
+    zPayMchId,
+    zPaySignKey,
 } from '@/utils/common'
 import About from '@/pages/about.vue'
 import {
@@ -1041,9 +1204,11 @@ import {
     Webview,
     getAllWebviews,
 } from '@tauri-apps/api/webview'
+import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { Window } from '@tauri-apps/api/window'
 import { useI18n } from 'vue-i18n'
 import payApi from '@/apis/pay'
+import githubApi from '@/apis/github'
 import { fetch } from '@tauri-apps/plugin-http'
 import QRCode from 'qrcode'
 import {
@@ -1058,15 +1223,29 @@ import {
     version,
 } from '@tauri-apps/plugin-os'
 import http from '@/utils/http'
+import { readFile, writeFile } from '@tauri-apps/plugin-fs'
+import { usePPStore } from '@/store'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const store = usePPStore()
+
+const now = new Date()
+const currentMonth = now.getMonth() + 1
+const githubBilling = ref({})
+const discountAmount = ref(0)
+const githubApiLimit = ref({
+    limit: 0,
+    remaining: 0,
+    reset: 0,
+    used: 0,
+})
 
 const textarea = ref('')
 const image = ref()
-const defaultMenu = ref('1-1')
-const menuIndex = ref('1-1')
+const defaultMenu = ref('0-1')
+const menuIndex = ref('0-1')
 
 // dialog
 const dialogTitle = ref('支付测试')
@@ -1074,9 +1253,47 @@ const dialogVisible = ref(false)
 
 let selectedDir = ''
 
+const getGithubBilling = async () => {
+    discountAmount.value = 0
+    const response = await githubApi.getBilibiliInfo(
+        store.userInfo.login,
+        currentMonth
+    )
+    console.log('response----', response)
+    if (response.status === 200) {
+        const rateLimit = {
+            limit: response.headers['x-ratelimit-limit'],
+            remaining: response.headers['x-ratelimit-remaining'],
+            reset: response.headers['x-ratelimit-reset'],
+            used: response.headers['x-ratelimit-used'],
+        }
+        githubApiLimit.value = rateLimit
+        githubBilling.value = response.data
+        response.data.usageItems.forEach((item: any) => {
+            discountAmount.value += item.discountAmount
+        })
+        console.log('githubApiLimit----', githubApiLimit.value)
+        console.log('githubBilling----', githubBilling.value)
+        console.log('discountAmount----', discountAmount.value)
+    } else {
+        oneMessage.error('获取Github信息失败')
+    }
+}
+
 const handleMenu = (index: string) => {
-    console.log('handleMenu', index)
-    menuIndex.value = index
+    if (isTauri()) {
+        menuIndex.value = index
+        console.log('isTauri')
+    } else {
+        if (index === '0-1') {
+            menuIndex.value = index
+            store.token && getGithubBilling()
+        } else if (index === '4') {
+            router.push('/about')
+        } else {
+            oneMessage.error('此API不支持PakePlus网页端')
+        }
+    }
 }
 
 const goBack = () => {
@@ -1214,10 +1431,45 @@ const osApis = async (func: string) => {
     }
 }
 
+// seticon
+const setWindowIcon = async () => {
+    const selected: any = await openSelect(false, [])
+    console.log('selected', selected)
+    if (selected) {
+        await getCurrentWindow().setIcon(selected)
+        oneMessage.success('设置窗口图标成功')
+    } else {
+        oneMessage.error('请选择窗口图标')
+    }
+}
+
+// base64ToIco
+const base64ToIco = async () => {
+    console.log('base64')
+    const selectedFilePath: any = await openSelect(false, [])
+    if (!selectedFilePath) {
+        return null
+    }
+    const binaryData = await readFile(selectedFilePath)
+    console.log('binaryData', binaryData)
+    const base64Data: any = arrayBufferToBase64(binaryData)
+    const base64String = 'data:image/jpg;base64,' + base64Data
+    const icoBlob = await base64PngToIco(base64String)
+    console.log('ico', icoBlob)
+    const savePath: any = await openSelect(true, [])
+    if (!savePath) {
+        return
+    }
+    const icoPath = await join(savePath, 'favicon.ico')
+    await writeFile(icoPath, icoBlob)
+    oneMessage.success('保存成功')
+}
+
 const payTimer: any = ref(null)
 const payTime = ref(0)
 const qrCodeData = ref('111')
 const payType = ref('weixin')
+const payMethod = ref('yun')
 const payOrderNo = ref('')
 
 const startPayTime = () => {
@@ -1237,6 +1489,7 @@ const startPayTime = () => {
 const getPayJsCode = async (payMathod: string = 'weixin') => {
     // 请输入支付金额(单位:元)
     payType.value = payMathod
+    payMethod.value = 'payjs'
     let money = 10
     try {
         money = parseInt(textarea.value)
@@ -1278,6 +1531,7 @@ const getPayJsCode = async (payMathod: string = 'weixin') => {
 const getYunPayCode = async (payMathod: string = 'weixin') => {
     console.log('getYunPayCode')
     payType.value = payMathod
+    payMethod.value = 'yun'
     let money = 10
     try {
         money = parseFloat(textarea.value)
@@ -1312,6 +1566,88 @@ const getYunPayCode = async (payMathod: string = 'weixin') => {
     }
 }
 
+// get z pay code
+const getZPayCode = async (payMathod: string = 'alipay') => {
+    console.log('getZPayCode')
+    payType.value = payMathod
+    payMethod.value = 'zpay'
+    let money = 10
+    try {
+        money = parseFloat(textarea.value)
+        if (isNaN(money)) {
+            oneMessage.error('请输入正确的支付金额')
+            return
+        }
+    } catch (error) {
+        oneMessage.error('请输入正确的支付金额')
+        return
+    }
+    payOrderNo.value = 'zpay_' + Date.now()
+    const order: any = {
+        pid: zPayMchId,
+        type: payMathod,
+        out_trade_no: payOrderNo.value,
+        notify_url: 'https://juejin.cn/',
+        name: 'VIP会员',
+        money: money,
+        clientip: '192.168.1.100',
+        sign_type: 'MD5',
+    }
+    // get pay sign
+    order.sign = getPaySign(order, zPaySignKey)
+    console.log('order----', order)
+    // formData post
+    // const formData = new FormData()
+    // formData.append('pid', zPayMchId)
+    // formData.append('type', payMathod)
+    // formData.append('out_trade_no', payOrderNo.value)
+    // formData.append('notify_url', 'https://juejin.cn/')
+    // formData.append('name', 'VIP会员')
+    // formData.append('money', money.toString())
+    // formData.append('clientip', '192.168.1.100')
+    // formData.append('sign_type', 'MD5')
+    // formData.append('sign', getPaySign(formData, zPaySignKey))
+    // const response: any = await payApi.getZPayCode2(formData)
+    const response: any = await payApi.getZPayCode(order)
+    console.log('response----', response)
+    if (response.status === 200 && response.data.code === 1) {
+        dialogVisible.value = true
+        startPayTime()
+        const url = await QRCode.toDataURL(response.data.payurl)
+        console.log('url', url)
+        qrCodeData.value = url
+    } else {
+        oneMessage.error('获取支付码失败')
+    }
+}
+
+// check z pay status
+const checkZPayStatus = async () => {
+    if (!payOrderNo.value) {
+        return
+    }
+    const order = {
+        act: 'order',
+        pid: zPayMchId,
+        key: zPaySignKey,
+        out_trade_no: payOrderNo.value,
+    }
+    const response: any = await payApi.checkZPayStatus(order)
+    console.log('response----', response)
+    if (response.status === 200 && response.data.status === 1) {
+        oneMessage.success('支付成功')
+    } else {
+        oneMessage.error('支付失败')
+    }
+}
+
+// check pay js status
+const checkPayJsStatus = async () => {
+    if (!payOrderNo.value) {
+        return
+    }
+}
+
 // check yun pay status
 const checkYunPayStatus = async () => {
     if (!payOrderNo.value) {
@@ -1334,6 +1670,17 @@ const checkYunPayStatus = async () => {
         }
     } else {
         oneMessage.error('获取支付状态失败')
+    }
+}
+
+// check pay status
+const checkPayStatus = async () => {
+    if (payMethod.value === 'payjs') {
+        await checkPayJsStatus()
+    } else if (payMethod.value === 'yun') {
+        await checkYunPayStatus()
+    } else if (payMethod.value === 'zpay') {
+        await checkZPayStatus()
     }
 }
 
@@ -1386,11 +1733,39 @@ const selectDownloadFolder = async () => {
     selectedDir = selected || ''
 }
 
-// 打开URL(本窗口)
-const openUrlWindow = async () => {
+// 打开URL(本窗口/新窗口)
+const openUrlWindow = async (type: string = 'current') => {
     const url = textarea.value
     if (url) {
-        window.location.href = url
+        if (type === 'current') {
+            window.location.href = url
+        } else {
+            console.log('new webview window')
+            const webview = new WebviewWindow('my-label', {
+                url: url,
+                x: 500,
+                y: 500,
+                width: 800,
+                height: 400,
+                focus: true,
+                title: 'PakePlus Window',
+                alwaysOnTop: true,
+                center: true,
+                resizable: true,
+                transparent: false,
+                visible: true,
+            })
+            webview.once('tauri://created', function () {
+                // webview successfully created
+                console.log('new webview created')
+            })
+            webview.once('tauri://error', function (e) {
+                // an error happened creating the webview
+                console.log('new webview error', e)
+            })
+        }
+    } else {
+        oneMessage.error('请输入URL')
     }
 }
 
@@ -1559,6 +1934,18 @@ const downAppData = async () => {
         savePath,
         fileId,
     })
+}
+
+// run shell
+const runShell = async () => {
+    if (isTauri() && textarea.value) {
+        const result = await invoke('run_command', {
+            command: textarea.value,
+        })
+        console.log('result', result)
+    } else {
+        oneMessage.error('请输入命令')
+    }
 }
 
 // 下载文件
@@ -1791,5 +2178,12 @@ onMounted(() => {
             }
         }
     }
+}
+
+.downProgress {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }
 </style>
